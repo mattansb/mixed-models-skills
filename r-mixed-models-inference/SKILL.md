@@ -1,5 +1,5 @@
 ---
-name: mixed-models-inference
+name: r-mixed-models-inference
 description: >
   Design, fit, compare, report, and interpret confirmatory linear and generalized linear mixed-effects models in R. Use whenever a user mentions mixed models, multilevel or hierarchical models, random effects, mixed effects, random slopes, repeated measures, clustered data, nesting, crossed subjects and items, lmerTest, lme4, lmer, glmer, glmer.nb, ICC, or random-effects structures for inference. Apply it even when the user asks only for a formula or random-effects structure. Focus on lme4/lmerTest; the design logic also applies to glmmTMB and brms.
 ---
