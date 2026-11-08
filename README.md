@@ -2,17 +2,21 @@
 
 Agent skills for designing, fitting, interpreting, and troubleshooting confirmatory mixed-effects models in R.
 
-The skills focus on `lme4` and `lmerTest` (but are also compatible with `glmmTMB`, and `rstanarm`/`brms`) and `easystats` packages such as [`performance`](https://easystats.github.io/performance/) and [`parameters`](https://easystats.github.io/parameters/).
+The skills focus on fitting mixed models with `{lme4}` (and `lmerTest`), but are also compatible with `{glmmTMB}`, and `{rstanarm}`/`{brms}`.
 
 ## Skills
 
+- [Mixed models for inference](#mixed-models-for-inference)
+- [Mixed-model troubleshooting](#mixed-model-troubleshooting)
+
 ### Mixed models for inference
 
-`mixed-models-inference` supports confirmatory linear and generalized linear mixed-effects modeling. It guides a design-first workflow: establish what each observation represents, distinguish nested from crossed grouping factors, determine which predictors vary within groups, and derive defensible fixed and random effects before fitting. It also covers model family selection, fitting with `lme4`/`lmerTest`, reporting ICC and $R^2$, and comparing nested models.
+[`mixed-models-inference`](r-mixed-models-inference/SKILL.md) supports confirmatory linear and generalized linear mixed-effects modeling. It guides a design-first workflow: establish what each observation represents, distinguish nested from crossed grouping factors, determine which predictors vary within and between groups, and derive defensible fixed and random effects specifications. It also covers model family selection, fitting with `lme4`/`lmerTest`, and comparing nested models. This skill also supports best practices for reporting ICC and $R^2$ (with [`{performance}`](https://easystats.github.io/performance/)) and producing coefficient tables (with [`{parameters}`](https://easystats.github.io/parameters/)).
 
 ### Mixed-model troubleshooting
 
-`mixed-models-troubleshooting` helps diagnose convergence warnings, singular or boundary fits, non-positive-definite Hessians, optimizer failures, and structural non-identifiability. It distinguishes problems the design cannot resolve from numerical issues, preserves design-justified random effects, and provides a staged workflow for checking specifications, trying optimizers, and using equivalent reparameterizations when appropriate.
+[`mixed-models-troubleshooting`](r-mixed-models-troubleshooting/SKILL.md) helps diagnose the most commonly occurring warnings:
+_convergence_ (`Model failed to converge ...`) and _singular fit_ (`boundary (singular) fit: see help('isSingular')`). It distinguishes problems the design cannot resolve from numerical issues, and provides a staged workflow that preserves design-justified random effects.
 
 ## Install
 
