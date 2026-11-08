@@ -80,22 +80,84 @@ Here too, a Bayesian model can go a long way - suggest switching to `rstanarm::s
 
 Center or rescale continuous predictors and sum-to-zero code factors where this preserves the target estimand (design-equivalent reparameterization); document changes to intercept and interaction interpretation.
 
+```r
+# Center a continuous predictor
+dat$trial_c <- datawizard::center(dat$trial)
+
+# Center and scale if needed
+dat$trial_cs <- datawizard::standardize(dat$trial)
+
+# Sum-to-zero code the factor
+contrasts(dat$condition) <- contr.sum
+
+mod_centered <- lme4::lmer(
+  response ~ condition * trial_c + (1 + condition + trial_c | participant),
+  data = dat
+)
+```
+
 #### Remove random covariances
 
 Preserve the design-supported intercepts and slopes while reducing covariance parameters, for example `(1 + condition || participant)` or the more general `diag(1 + condition | participant)` (works when `condition` is a factor). Do not automatically delete a design-justified slope - only revise a term after establishing that it is structurally non-identifiable or after a documented, substantive decision (option 1 above).
+
+Using `||` is the same same as fitting separate random effects, which results in no covariance between them.
+
+```
+response ~ condition * trial_c +
+  (1 + trial_c || participant) +
+  (1 + condition | item),
+```
+
+is the same as:
+
+```
+response ~ condition * trial_c +
+  (1 | participant) +
+  (0 + trial_c | participant) +
+  (1 + condition | item),
+```
+
+This is only appropriate for numeric slopes - when used with a factor slope it gives per-category intercepts (R's standard `0 + factor` syntax). Instead, the more general `diag()` should be used:
+
+```
+response ~ condition * trial_c +
+  diag(1 + condition | participant) +
+  (1 + condition | item),
+```
 
 #### Complex random intercepts
 
 Complex random intercepts (CRIs) can reduce computational burden, but random effects are less directly interpretable. This option is expecially useful with factorial designs or designs with random slopes for factors.
 
+For example, we have `X` (a continuous predictor) and `condition` (a factor) - both within participants. This standard specification:
+
+```
+response ~ X * condition + (1 + X * condition | participant)
+```
+
+Can be expanded to:
+
+```
+response ~ X * condition +
+  (1 | participant) +
+  (0 + X | participant) +
+  (0 + condition | participant) +
+  (0 + X:condition | participant)
+```
+
+Which can then be converged to CRIs:
+
+```
+response ~ X * condition +
+  (1 + X | participant) +
+  (1 + X | participant:condition)
+```
+
 Keep the same CRI parameterization across compared models because it changes degrees of freedom and model structure.
 
 ### 4. Other
 
-Turning off derivative calculations or convergence checks, for example `lme4::lmerControl(calc.derivs = FALSE)`, can help diagnose which check produced a warning. It does not show that the model converged and is not a remedy.
-
-
-
+Turning off derivative calculations or convergence checks, for example `lme4::lmerControl(calc.derivs = FALSE)` (only for LMMs), can help diagnose which check produced a warning. It does not show that the model converged and is not a remedy.
 
 ## Sources
 
