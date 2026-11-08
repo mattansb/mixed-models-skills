@@ -1,5 +1,5 @@
 ---
-name: r-mixed-models-troubleshooting
+name: mixed-models-troubleshooting-r
 description: >
   Diagnose and resolve convergence warnings, singular or boundary fits, non-positive-definite Hessians, optimizer failures, and identifiability problems in confirmatory lme4/lmerTest mixed models. Use whenever a user reports a mixed-model warning, asks whether to simplify random effects, needs help with maximal random-effects structures, or is fitting a sparse or fully crossed design. Preserve random intercepts and slopes justified by the design.
 ---
