@@ -6,9 +6,6 @@ The skills focus on fitting mixed models with `{lme4}` (and `lmerTest`), but are
 
 ## Skills
 
-- [Mixed models for inference](#mixed-models-for-inference)
-- [Mixed-model troubleshooting](#mixed-model-troubleshooting)
-
 ### Mixed models for inference
 
 [`mixed-models-inference`](r-mixed-models-inference/SKILL.md) supports confirmatory linear and generalized linear mixed-effects modeling. It guides a design-first workflow: establish what each observation represents, distinguish nested from crossed grouping factors, determine which predictors vary within and between groups, and derive defensible fixed and random effects specifications. It also covers model family selection, fitting with `lme4`/`lmerTest`, and comparing nested models. This skill also supports best practices for reporting ICC and $R^2$ (with [`{performance}`](https://easystats.github.io/performance/)) and producing coefficient tables (with [`{parameters}`](https://easystats.github.io/parameters/)).
