@@ -6,9 +6,11 @@ description: >
 
 # Mixed-model troubleshooting
 
-Use this skill after deriving the random-effects structure from the design. Do not cure these warnings by dropping design-justified random intercepts or slopes. For confirmatory inference, the design-supported maximal structure protects fixed-effect inference; see Barr et al. (2013).
+Use this skill after deriving the random-effects structure from the design. Do not cure these warnings by dropping design-justified random intercepts or slopes, and do not offer dropping them as an option; only structurally non-identifiable terms may be removed, after confirming with the user. For confirmatory inference, the design-supported maximal structure protects fixed-effect inference; see Barr et al. (2013).
 
-## First classify the problem
+The main focus here is singularity warnings and convergence warnings. This skill works through first classifying the problem, and then lists possible remedies (some of which are applicable only to convergence warnings).
+
+## 1. Classify the problem
 
 Distinguish these before changing a model:
 
@@ -17,9 +19,9 @@ Distinguish these before changing a model:
 - **Numerical non-convergence:** the optimizer or derivative checks did not establish that the algorithm reached a stable likelihood optimum. It can produce unreliable or non-estimable estimates and standard errors, but an `lme4` warning can also be overly conservative.
 - **Data/model failure:** coding errors, separation, empty cells, wrong outcome family, severe scaling problems, or a proposed slope that does not vary within its grouping factor.
 
-## Diagnose singularity
+### Singular fits
 
-A singular model is statistically defined, but may indicate an over-complex covariance structure and weaken ordinary Wald or likelihood-ratio inference. Do not equate it with structural non-identifiability: the latter is determined by the design before fitting.
+A singular fit may indicate an over-complex covariance structure, which can weaken ordinary Wald or likelihood-ratio inference, but it is a valid likelihood optimum on the boundary of the parameter space, not an optimizer failure. Do not equate it with structural non-identifiability: the latter is determined by the design before fitting.
 
 Rather than relying solely on printed variances or correlations use:
 
@@ -29,7 +31,11 @@ performance::check_singularity(mod_lmm)
 
 It returns `TRUE` for a singular fit. Its default `tolerance = 1e-5` controls how close to a boundary is considered singular; a larger tolerance is stricter. Inspect `VarCorr(mod_lmm)` as a complement, not a substitute. For `glmmTMB` models, `check = "terms"` can identify affected random-effects terms.
 
-When inference is required for a singular fit, treat random-effect estimates and uncertainty cautiously. Ordinary Wald standard errors may be fragile. For fixed effects, profile-likelihood intervals are one alternative (can be slow):
+Singularity can also be confirmed by inspecting `VarCorr()` and eigenvalues of each group's covariance matrix to locate the degenerate direction.
+
+If singularity is not due to errors in design / model spec (see below), treat random-effect estimates and uncertainty cautiously. Do _not_ claim that a singular fit automatically leaves fixed-effect inference unaffected: ordinary Wald standard errors and their derived p-values and CIs may be fragile, and the user should be made aware of this.
+
+For inference on fixed effects, profile-likelihood intervals are one alternative (can be slow) - in which case p-values should not be used for inference, only the CIs (a significant results would be one where 0 is excluded from the profile CI):
 
 ```r
 parameters::model_parameters(
@@ -39,9 +45,9 @@ parameters::model_parameters(
 )
 ```
 
-Appropriate bootstrap-based uncertainty assessment is another option. Do not claim that a singular fit automatically leaves fixed-effect inference unaffected. For sparse or weakly identified estimation, consider `brms` with meaningful weakly informative priors.
+Appropriate bootstrap-based uncertainty assessment is another option. For sparse or weakly identified estimation, consider `rstanarm::stan_glmer()` or `brms` with meaningful weakly informative priors.
 
-## Diagnose and investigate convergence
+### Convergence
 
 Alongside the original `lme4` warning, use:
 
@@ -51,15 +57,25 @@ res_converged <- performance::check_convergence(mod_lmm)
 
 It returns `TRUE` when its alternative check finds convergence acceptable and `FALSE` when it is suspicious; its convergence value is returned as an attribute. The default `tolerance = 0.001` can be made stricter by making it smaller.
 
-Work in this order:
+## 1. Remedies
 
-### 1. Verify design and model spec
+Below are potential remedies for singular fits and convergence warnings.
+
+### I. Verify design and model spec
+
+(Applies to convergence and singular fits.)
 
 First verify the design, nesting/crossing, contrasts, outcome coding, missingness, empty cells, family/link, offsets, separation issues, and within-group variation for every slope, and the distinction from a structurally confounded term. See the `r-mixed-models-inference` skill for guidance.
 
 If a component is truly non-identifiable from the design, explain that structural reason and confirm any revised model with the user.
 
-### 2. Optimizer
+If no issues arise in the design or model spec:
+- For **singular fits** - _do not_ escalate to other remedies
+- For **convergence warnings** - escalate to the next potential remedy.
+
+### II. Optimizer
+
+(Convergence problems only; not a remedy for singular fits.)
 
 Increase the optimizer iteration budget and try a suitable optimizer, for example `lme4::lmerControl(optimizer = "bobyqa")` or `lme4::glmerControl(optimizer = "bobyqa")`.
 
@@ -74,7 +90,15 @@ Inspect `which.OK`, log-likelihoods, fixed effects, and random-effect standard d
 
 Here too, a Bayesian model can go a long way - suggest switching to `rstanarm::stan_glmer()` or `brms::brm()` with meaningful weakly informative priors.
 
-### 3. Change feature specification
+### III. Change feature specification
+
+(Convergence problems only; not a remedy for singular fits.)
+
+There are 3 main avenues for changing the feature specification:
+- Centering and recoding
+- Removing random covariances
+- Using complex random intercepts
+
 
 #### Centering and recoding
 
@@ -98,9 +122,9 @@ mod_centered <- lme4::lmer(
 
 #### Remove random covariances
 
-Preserve the design-supported intercepts and slopes while reducing covariance parameters, for example `(1 + condition || participant)` or the more general `diag(1 + condition | participant)` (works when `condition` is a factor). Do not automatically delete a design-justified slope - only revise a term after establishing that it is structurally non-identifiable or after a documented, substantive decision (option 1 above).
+Preserve the design-supported intercepts and slopes while reducing covariance parameters, for example `(1 + condition || participant)` or the more general `diag(1 + condition | participant)` (works when `condition` is a factor). This is a convergence measure, not a singularity fix. Do not delete a design-justified slope - only revise a term after establishing that it is structurally non-identifiable and confirming with the user.
 
-Using `||` is the same same as fitting separate random effects, which results in no covariance between them.
+Using `||` is the same as fitting separate random effects, which results in no covariance between them.
 
 ```
 response ~ condition * trial_c +
@@ -127,7 +151,7 @@ response ~ condition * trial_c +
 
 #### Complex random intercepts
 
-Complex random intercepts (CRIs) can reduce computational burden, but random effects are less directly interpretable. This option is expecially useful with factorial designs or designs with random slopes for factors.
+Complex random intercepts (CRIs) can reduce computational burden, but random effects are less directly interpretable. This option is especially useful with factorial designs or designs with random slopes for factors.
 
 For example, we have `X` (a continuous predictor) and `condition` (a factor) - both within participants. This standard specification:
 
@@ -155,7 +179,9 @@ response ~ X * condition +
 
 Keep the same CRI parameterization across compared models because it changes degrees of freedom and model structure.
 
-### 4. Other
+### IV. Other
+
+(Convergence problems only; not a remedy for singular fits.)
 
 Turning off derivative calculations or convergence checks, for example `lme4::lmerControl(calc.derivs = FALSE)` (only for LMMs), can help diagnose which check produced a warning. It does not show that the model converged and is not a remedy.
 
