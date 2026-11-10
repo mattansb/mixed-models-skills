@@ -15,6 +15,10 @@ The skills focus on fitting mixed models with `{lme4}` (and `lmerTest`), but are
 [`mixed-models-troubleshooting`](mixed-models-troubleshooting-r/SKILL.md) helps diagnose the most commonly occurring warnings:
 _convergence_ (`Model failed to converge ...`) and _singular fit_ (`boundary (singular) fit: see help('isSingular')`). It distinguishes problems the design cannot resolve from numerical issues, and provides a staged workflow that preserves design-justified random effects.
 
+## Working examples
+
+See [Example 1](example%201.md) and [Example 2](example%202.md) for examples of the skills in use.
+
 ## Install
 
 Install both skills with the [Skills CLI](https://skills.sh):
