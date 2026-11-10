@@ -8,6 +8,18 @@ description: >
 
 Use this workflow for explanatory or confirmatory inference, not primarily prediction. Translate the data-generating design into a defensible fixed- and random-effects structure; do not infer it from column names. For convergence, singularity, or identifiability problems, use `mixed-models-troubleshooting`.
 
+## Required deliverables checklist
+
+Every fitted-model response must include, in this order:
+
+1. Design confirmation (predictor-by-grouping-factor table and formula), confirmed by the user
+2. Random-intercepts only model and `performance::icc()`
+3. Full model and `parameters::model_parameters()`
+4. Address any issues (singularity, convergence) when warnings appear
+
+Do not report the full model without step 2. If the file or reply is missing the ICC, the task is incomplete. A request such as "fit this model" or "write that model" should still triggers step 2. Always include it.
+
+
 ## Start with the design interview
 
 Before writing a formula, collect missing information. Do not proceed past an unresolved design question.
@@ -96,7 +108,7 @@ Write fixed effects from the substantive question: prespecified main effects, in
 For each design-justified grouping factor:
 
 1. Include a random intercept for varying group baselines.
-2. Add a random slope for every fixed-effect term that varies within that grouping factor.
+2. Add a random slope for every fixed-effect term that varies within that grouping factor. (This should include covariates and control variables. Do not skip a slope because a term is "only a covariate" or not the effect of interest.)
 3. Do not add a slope for a term constant within that grouping factor; it is non-identifiable there.
 
 For a crossed participant-item experiment where `condition` varies within both factors:
