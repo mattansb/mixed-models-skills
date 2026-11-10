@@ -40,6 +40,20 @@ Do not treat IDs as nested merely because they are unique in the observed data. 
 
 For every candidate fixed-effect term and grouping factor, determine whether the term varies within its groups.
 
+- **DO NOT GUESS at what level a predictor varies.** Either ask the user to describe the design in more detail, or run `performance::check_group_variation()`. If any doubt remains after the user has described the design, run `check_group_variation()` anyway. Do not write a formula (in chat or in any file) before the design is confirmed.
+
+**With multiple grouping factors, determine variation separately for each one.** A predictor that is constant within one grouping unit can still vary within another. For example, with children nested in schools, child-level `female` is constant within child but varies within school, so it needs a school-level random slope.
+
+Always build a predictor-by-grouping-factor table: rows are the predictors, columns are grouping factors, cells are `within` or `between`. Example:
+
+| Term | child | family |
+|---|---|---|
+| year | within | within |
+| first_child | between | within |
+| town | between | between |
+
+(Illustrative only; verify each cell with the data or the user.)
+
 - A constant term is between-group at that level.
 - A varying term is within-group at that level.
 - An interaction is eligible for a slope only when that interaction varies within the group. An interaction with a between-group term does not get a random slope.
@@ -118,7 +132,7 @@ Prefer `lmerTest::lmer()` to `lme4::lmer()` for LMM inference. It uses the same 
 
 ## Validate before fitting
 
-Always summarize the design in plain language and as a formula, then ask the user to confirm or correct it before fitting:
+Do not guess variation levels: use the user's description and `performance::check_group_variation()` (see step 2). Always include the predictor-by-grouping-factor table (within/between) in the confirmation message. Summarize the design in plain language and as a formula, then ask the user to confirm or correct it before fitting. **Do not write the formula to any file until the user confirms**:
 
 > I understand that each row is **[observation]**; **[factor A]** and **[factor B]** are **[nested/crossed]**; **[term]** varies within **[group]**, while **[term]** is between **[group]**. The confirmatory fixed-effects question is **[question]**. I therefore propose **[formula]**. Is that design correct before I fit it?
 
